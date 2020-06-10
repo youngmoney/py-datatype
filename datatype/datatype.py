@@ -1,4 +1,4 @@
-class DataType(type):
+class Object(type):
     Self = type("<self>", (object,), {})
 
     def __new__(cls, name, bases, attrs):
@@ -24,28 +24,28 @@ class DataType(type):
             if isinstance(field_type, list):
                 if len(field_type) != 1:
                     raise TypeError(
-                        "DataType '{field}' invalid: specify a list as [<list type>]."
+                        "Object '{field}' invalid: specify a list as [<list type>]."
                     )
                 validate_field(field + ".list_type", field_type[0])
             elif isinstance(field_type, dict):
                 if len(field_type.keys()) != 1:
                     raise TypeError(
-                        f"DataType '{field}' invalid: specify a dictionary as {{str:<value type>}}."
+                        f"Object '{field}' invalid: specify a dictionary as {{str:<value type>}}."
                     )
                 key_type = list(field_type.keys())[0]
                 value_type = field_type[key_type]
                 if key_type != str:
                     raise TypeError(
-                        f"DataType '{field}' invalid: specify a dictionary as {{str:<value type>}}."
+                        f"Object '{field}' invalid: specify a dictionary as {{str:<value type>}}."
                     )
                 validate_field(field + ".value_type", value_type)
-            elif field_type == DataType.Self:
+            elif field_type == Object.Self:
                 return
             elif isinstance(field_type, type):
                 return
             else:
                 raise TypeError(
-                    f"DataType '{field}' invalid: '{field_type}' is not a valid type."
+                    f"Object '{field}' invalid: '{field_type}' is not a valid type."
                 )
 
         for field in fields:
@@ -53,11 +53,11 @@ class DataType(type):
             validate_field(field, field_type)
 
         def apply_type(key, field_type, value):
-            if field_type == DataType.Self:
+            if field_type == Object.Self:
                 return inst(value)
             if not isinstance(field_type, type):
                 raise TypeError(
-                    f"DataType '{key}' invalid: '{field_type}' is not a type."
+                    f"Object '{key}' invalid: '{field_type}' is not a type."
                 )
             try:
                 return field_type(value)
@@ -78,7 +78,7 @@ class DataType(type):
                 input_object = {}
             else:
                 raise TypeError(
-                    "ParseError: DataType must be constructed with either a dictionary or keyword arguments."
+                    "ParseError: Object must be constructed with either a dictionary or keyword arguments."
                 )
 
             for field_key in fields:
@@ -237,31 +237,3 @@ class Option(type):
             setattr(inst, v, inst(v))
 
         return inst
-
-
-class Opts(metaclass=Option):
-    opt1 = 0
-    opt2 = 1
-
-
-class Test(metaclass=DataType):
-    datatype_a = int
-    datatype_b = str
-    datatype_c = [int]
-    datatype_d = {str: int}
-    datatype_recurse = {str: DataType.Self}
-
-    def __init__(self, b="hello", c=[1, 2]):
-        if self.a is not None:
-            self.a += 1
-
-
-def tests():
-    print(Test({"a": 1}))
-    print(Test({"b": 1}))
-    print(Test({"a": "1"}))
-    print(Test({"c": ["1"]}))
-    print(Test({"d": {"1": "1"}}))
-    print(Test({"d": {"1": "1"}}))
-    print(Test({"recurse": {"this": {"a": 1}}}))
-    print(Test.datatype_Schema())
