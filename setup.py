@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="py-datatype",
-    version="0.0.3",
+    version="0.0.4",
     author="Taylor L Money",
     author_email="git@taylorlmoney.com",
     description="",
