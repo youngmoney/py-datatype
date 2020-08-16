@@ -1,3 +1,31 @@
+class Wrapper(type):
+    def __new__(cls, name, bases, attrs):
+        inst = super().__new__(cls, name, bases, attrs)
+        if not "value_type" in attrs:
+            raise TypeError(f"Wrapper must have class attribute 'value_type'.")
+        value_type = attrs["value_type"]
+        if not isinstance(value_type, type):
+            raise TypeError(
+                f"Wrapper requires a type for value_type, not: {value_type}"
+            )
+
+        from_string = attrs["__init__"]
+
+        def init(self, value):
+            if isinstance(value, cls):
+                self._value = value._value
+            elif isinstance(value, str):
+                from_string(self, value)
+            else:
+                self._value = value_type(value)
+
+        inst.__init__ = init
+
+        setattr(inst, "value", lambda s: s._value)
+
+        return inst
+
+
 class Object(type):
     Self = type("<self>", (object,), {})
 
@@ -68,6 +96,26 @@ class Object(type):
 
         original_init = attrs["__init__"] if "__init__" in attrs else None
 
+        def setattr_field(self, attr, value):
+            if attr in fields:
+                field_type = fields[attr]
+                if type(field_type) in [list, dict]:
+                    field_type = type(field_type)
+                if value is not None and not isinstance(value, field_type):
+                    value = field_type(value)
+                super(inst, self).__setattr__(attr, value)
+            else:
+                super(inst, self).__setattr__(attr, value)
+
+        def getattr_field(self, attr):
+            value = super(inst, self).__getattribute__(attr)
+            if isinstance(type(value), Wrapper):
+                return value.value()
+            return value
+
+        inst.__setattr__ = setattr_field
+        inst.__getattribute__ = getattr_field
+
         def init(self, *vargs, **kwargs):
             input_object = None
             if len(vargs) == 0:
@@ -120,6 +168,7 @@ class Object(type):
                     setattr(self, field_key, d)
 
                 else:
+
                     setattr(
                         self, field_key, apply_type(field_key, field_type, input_value)
                     )

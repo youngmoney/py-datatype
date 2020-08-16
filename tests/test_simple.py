@@ -103,3 +103,32 @@ class TestObject(unittest.TestCase):
         self.assertEqual(o.recurse["this"].c, [1, 2])
         self.assertEqual(o.recurse["this"].d, None)
         self.assertEqual(o.recurse["this"].recurse, None)
+
+
+class TestWrapper(unittest.TestCase):
+    class Obj(metaclass=datatype.Object):
+        class IntWrapper(metaclass=datatype.Wrapper):
+            value_type = int
+
+            def __init__(self, s):
+                self._value = int(s)
+
+            def __repr__(self):
+                return str(self._int)
+
+        datatype_a = IntWrapper
+
+    def test_from_string(self):
+        o = self.Obj()
+        o.a = "10"
+        self.assertEqual(o.a, 10)
+
+    def test_from_object(self):
+        o = self.Obj()
+        o.a = self.Obj.IntWrapper(10)
+        self.assertEqual(o.a, 10)
+
+    def test_from_value(self):
+        o = self.Obj()
+        o.a = 10
+        self.assertEqual(o.a, 10)
