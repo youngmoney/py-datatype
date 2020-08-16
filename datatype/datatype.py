@@ -9,15 +9,32 @@ class Wrapper(type):
                 f"Wrapper requires a type for value_type, not: {value_type}"
             )
 
-        from_string = attrs["__init__"]
+        from_object = attrs["__init__"]
 
         def init(self, value):
             if isinstance(value, cls):
                 self._value = value._value
-            elif isinstance(value, str):
-                from_string(self, value)
+            elif isinstance(value, value_type):
+                self._value = value
             else:
-                self._value = value_type(value)
+                from_object(self, value)
+
+            def to_object(self):
+                if self._value is None:
+                    return ""
+                return repr(self._value)
+
+            if getattr(self, "object", None) is None:
+                self.object = to_object.__get__(self)
+
+        def eq(self, other):
+            if isinstance(other, self.__class__):
+                return self._value == other._value
+            if isinstance(other, value_type):
+                return self._value == other
+            return False
+
+        inst.__eq__ = eq
 
         inst.__init__ = init
 
@@ -186,7 +203,9 @@ class Object(type):
         def datatype_Object(self, short=True):
             d = {}
             for k in fields:
-                value = getattr(self, k, None)
+                value = super(inst, self).__getattribute__(k)
+                if isinstance(type(value), Wrapper):
+                    value = value.object()
                 if value is None and short:
                     continue
                 d[k] = value

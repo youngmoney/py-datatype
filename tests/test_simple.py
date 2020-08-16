@@ -114,7 +114,7 @@ class TestWrapper(unittest.TestCase):
                 self._value = int(s)
 
             def __repr__(self):
-                return str(self._int)
+                return str(self._value)
 
         datatype_a = IntWrapper
 
@@ -132,3 +132,12 @@ class TestWrapper(unittest.TestCase):
         o = self.Obj()
         o.a = 10
         self.assertEqual(o.a, 10)
+
+    def test_to_dict(self):
+        o = self.Obj(a=10)
+        self.assertEqual(o.datatype_Object(), {"a": "10"})
+
+    def test_eq(self):
+        o = self.Obj(a=10)
+        self.assertEqual(self.Obj.IntWrapper("10"), 10)
+        self.assertEqual(self.Obj(o.datatype_Object()).a, o.a)
