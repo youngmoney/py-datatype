@@ -7,6 +7,7 @@ class TestOption(unittest.TestCase):
     class Opt(metaclass=datatype.Option):
         opt1 = 0
         opt2 = 1
+        optstring = "hello"
 
     def test_parse(self):
         self.assertEqual(self.Opt(self.Opt.opt1), self.Opt.opt1)
@@ -28,6 +29,11 @@ class TestOption(unittest.TestCase):
         self.assertNotEqual(self.Opt.opt1, 1)
         self.assertNotEqual(self.Opt.opt1, "opt2")
         self.assertNotEqual(self.Opt.opt1, "OPT2")
+
+    def test_definition(self):
+        self.assertEqual(self.Opt.opt1.definition(), 0)
+        self.assertEqual(self.Opt.opt2.definition(), 1)
+        self.assertEqual(self.Opt.optstring.definition(), "hello")
 
 
 class TestObject(unittest.TestCase):

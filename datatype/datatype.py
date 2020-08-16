@@ -246,12 +246,14 @@ class Option(type):
         inverse_values = {}
         values_normal = []
         upper_to_name = {}
+        definitions = {}
         for a in attrs:
             if a.startswith("_"):
                 continue
             values.append(a.upper())
             values_normal.append(a)
             upper_to_name[a.upper()] = a
+            definitions[a.upper()] = attrs[a]
             if attrs[a] is not None:
                 if attrs[a] in inverse_values:
                     raise TypeError(
@@ -282,6 +284,13 @@ class Option(type):
             return self._value
 
         inst.value = get
+
+        def definition(self):
+            if not self._value in definitions:
+                raise TypeError(f"Current value is invalid: {self._value}.")
+            return definitions[self.value()]
+
+        inst.definition = definition
 
         def rep(self):
             normal = upper_to_name[self.value()]
