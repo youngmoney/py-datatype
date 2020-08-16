@@ -12,7 +12,7 @@ class Wrapper(type):
         from_object = attrs["__init__"]
 
         def init(self, value):
-            if isinstance(value, cls):
+            if isinstance(value, inst):
                 self._value = value._value
             elif isinstance(value, value_type):
                 self._value = value
