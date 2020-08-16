@@ -214,6 +214,13 @@ class Object(type):
 
         inst.datatype_Object = datatype_Object
 
+        def eq(self, other):
+            if isinstance(type(other), Object):
+                return self.datatype_Object() == other.datatype_Object()
+            return self.datatype_Object() == other
+
+        inst.__eq__ = eq
+
         def value_string(value):
             if isinstance(value, list):
                 v = value_string(value[0])

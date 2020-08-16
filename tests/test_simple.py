@@ -48,6 +48,9 @@ class TestObject(unittest.TestCase):
             if self.a is not None:
                 self.a += 1
 
+    class SimpleObj(metaclass=datatype.Object):
+        datatype_a = int
+
     def test_a(self):
         o = self.Obj({"a": 1})
         self.assertEqual(o.a, 2)
@@ -109,6 +112,19 @@ class TestObject(unittest.TestCase):
         self.assertEqual(o.recurse["this"].c, [1, 2])
         self.assertEqual(o.recurse["this"].d, None)
         self.assertEqual(o.recurse["this"].recurse, None)
+
+    def test_equality(self):
+        o = self.Obj({"d": {1: "1"}, "b": 2, "recurse": {"this": {"a": 10}}})
+        same = self.Obj({"d": {1: "1"}, "b": 2, "recurse": {"this": {"a": 10}}})
+        different = self.Obj({"d": {1: "1"}, "b": 2})
+        self.assertEqual(o, same)
+        self.assertNotEqual(o, different)
+
+    def test_equality_different_class(self):
+        simple = self.Obj(a=0, b=None, c=None)
+        different_type = self.SimpleObj(a=1)
+        self.assertEqual(simple, different_type)
+        self.assertEqual(simple, different_type.datatype_Object())
 
 
 class TestWrapper(unittest.TestCase):
